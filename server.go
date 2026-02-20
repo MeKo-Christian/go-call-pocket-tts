@@ -74,9 +74,9 @@ func (o *ServerOptions) startupTimeout() time.Duration {
 // Create with NewServerClient. Call Start to launch the server process, then
 // Generate for each TTS request, and Stop when done.
 type ServerClient struct {
-	opts   ServerOptions
-	proc   *exec.Cmd
-	http   *http.Client
+	opts ServerOptions
+	proc *exec.Cmd
+	http *http.Client
 }
 
 // NewServerClient creates a ServerClient with the given options.

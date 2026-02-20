@@ -4,10 +4,10 @@ A Go library (`package pockettts`) that wraps the [pocket-tts](https://github.co
 
 It supports two integration modes:
 
-| Mode | How it works | Best for |
-|------|-------------|---------|
-| **CLI** | Spawns `pocket-tts generate` per request | Simplicity, correctness, low request rate |
-| **Server** | Connects to `pocket-tts serve` (HTTP) | Low latency, high request rate (model stays warm) |
+| Mode       | How it works                             | Best for                                          |
+| ---------- | ---------------------------------------- | ------------------------------------------------- |
+| **CLI**    | Spawns `pocket-tts generate` per request | Simplicity, correctness, low request rate         |
+| **Server** | Connects to `pocket-tts serve` (HTTP)    | Low latency, high request rate (model stays warm) |
 
 ---
 
