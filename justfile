@@ -41,6 +41,11 @@ test-coverage:
 # Run all checks (formatting, linting, tests, tidiness)
 ci: check-formatted test lint check-tidy
 
+# Install pocket-tts into an isolated uv-managed environment and ensure it is on PATH
+setup:
+    uv tool install pocket-tts
+    @uv tool run pocket-tts --version && echo "pocket-tts installed successfully" || (echo "Installation failed"; exit 1)
+
 # Check that pocket-tts executable is on PATH
 preflight:
     @pocket-tts --version && echo "pocket-tts OK" || echo "pocket-tts not found — install with: pip install pocket-tts"
