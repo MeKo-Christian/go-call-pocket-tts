@@ -41,14 +41,16 @@ test-coverage:
 # Run all checks (formatting, linting, tests, tidiness)
 ci: check-formatted test lint check-tidy
 
-# Install pocket-tts into an isolated uv-managed environment and ensure it is on PATH
+# Install pocket-tts into an isolated uv-managed environment (CPU-only PyTorch, no CUDA drivers needed)
 setup:
-    uv tool install pocket-tts
-    @uv tool run pocket-tts --version && echo "pocket-tts installed successfully" || (echo "Installation failed"; exit 1)
+    uv tool install pocket-tts \
+        --extra-index-url https://download.pytorch.org/whl/cpu \
+        --index-strategy unsafe-best-match
+    @which pocket-tts && echo "pocket-tts installed successfully" || (echo "Installation failed"; exit 1)
 
 # Check that pocket-tts executable is on PATH
 preflight:
-    @pocket-tts --version && echo "pocket-tts OK" || echo "pocket-tts not found — install with: pip install pocket-tts"
+    @which pocket-tts && echo "pocket-tts OK" || echo "pocket-tts not found — run: just setup"
 
 # Clean build artifacts
 clean:
