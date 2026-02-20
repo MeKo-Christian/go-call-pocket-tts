@@ -1,0 +1,49 @@
+# Example docker-compose for the sidecar pattern:
+#
+#   pocket-tts-sidecar  — runs `pocket-tts serve`
+#   your-go-app         — your Go service, calls the sidecar via HTTP
+#
+# Start with:
+#   docker compose up
+#
+# The Go service connects to http://pocket-tts:8000 (the sidecar container).
+
+version: "3.9"
+
+services:
+  # ── pocket-tts sidecar ───────────────────────────────────────────────────
+  pocket-tts:
+    image: python:3.12-slim-bookworm
+    command: >
+      sh -c "
+        pip install --quiet pocket-tts
+          --extra-index-url https://download.pytorch.org/whl/cpu
+          --index-strategy unsafe-best-match &&
+        pocket-tts serve --host 0.0.0.0 --port 8000 --no-reload
+      "
+    ports:
+      - "8000:8000"
+    environment:
+      HF_HOME: /cache
+    volumes:
+      - tts-cache:/cache
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://localhost:8000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+      start_period: 5m  # allow time for model download on first start
+
+  # ── Go application ────────────────────────────────────────────────────────
+  # Uncomment and adapt once you have a binary to run.
+  # app:
+  #   build: .
+  #   environment:
+  #     POCKET_TTS_HOST: pocket-tts
+  #     POCKET_TTS_PORT: "8000"
+  #   depends_on:
+  #     pocket-tts:
+  #       condition: service_healthy
+
+volumes:
+  tts-cache:
