@@ -1,0 +1,15 @@
+# Go
+/bin/
+*.test
+*.out
+
+# Python / pocket-tts
+__pycache__/
+*.pyc
+.venv/
+*.safetensors
+
+# Editor
+.idea/
+.vscode/
+*.swp

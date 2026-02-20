@@ -1,0 +1,40 @@
+# treefmt configuration for go-call-pocket-tts
+
+[global]
+excludes = [
+    "**/.gitignore",
+    "**/.git/**",
+    "go.sum",
+    "go.mod",
+    "**/*.txt",
+    "LICENSE",
+    "**/*.wav",
+    "**/*.safetensors",
+    "bin/**",
+    "coverage.out",
+    "coverage.html",
+]
+
+# Go formatter
+[formatter.gofumpt]
+command = "gofumpt"
+options = ["-w"]
+includes = ["*.go"]
+
+# Go import organizer - runs after gofumpt
+[formatter.gci]
+command = "gci"
+options = ["write"]
+includes = ["*.go"]
+priority = 1
+
+# Markdown, YAML, JSON, TOML formatter
+[formatter.prettier]
+command = "prettier"
+options = ["-w"]
+includes = [
+    "*.md",
+    "*.yaml",
+    "*.yml",
+    "*.json",
+]
