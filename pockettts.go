@@ -15,6 +15,7 @@ package pockettts
 import (
 	"context"
 	"io"
+	"time"
 )
 
 // Options controls optional parameters passed to the pocket-tts CLI.
@@ -69,6 +70,13 @@ type Options struct {
 	Concurrency int
 }
 
+// GenerationStats holds observability data for a single TTS call.
+type GenerationStats struct {
+	// Duration is the wall-clock time from sending the request until the
+	// full WAV was received.
+	Duration time.Duration
+}
+
 // WAVResult holds the generated audio together with basic metadata.
 type WAVResult struct {
 	// Data contains the raw WAV file bytes (including RIFF header).
@@ -82,6 +90,9 @@ type WAVResult struct {
 
 	// BitsPerSample is parsed from the WAV header.
 	BitsPerSample uint16
+
+	// Stats contains timing and observability data for this call.
+	Stats GenerationStats
 }
 
 // Generate calls `pocket-tts generate --text - --output-path -` with the
@@ -125,4 +136,33 @@ func (c *Client) Generate(ctx context.Context, text string) (*WAVResult, error) 
 // Returns nil on success, or an error describing what is missing.
 func Preflight(executablePath string) error {
 	return preflight(executablePath)
+}
+
+// ExportVoiceOptions controls optional parameters for the export-voice command.
+type ExportVoiceOptions struct {
+	// Config is an optional path to a pocket-tts config file or model variant.
+	Config string
+
+	// Quiet suppresses informational output from the CLI (CLI: --quiet).
+	Quiet bool
+
+	// ExecutablePath overrides the default "pocket-tts" binary name/path.
+	ExecutablePath string
+
+	// LogWriter receives stderr output from the CLI subprocess.
+	// If nil, stderr is discarded.
+	LogWriter io.Writer
+}
+
+// ExportVoice runs `pocket-tts export-voice <audioPath> <exportPath>` to
+// convert an audio file into a .safetensors voice-embedding file that can be
+// loaded quickly via Options.Voice in subsequent Generate calls.
+//
+// This is a one-time offline step; the produced .safetensors file can be
+// reused across restarts without re-encoding the audio prompt each time.
+func ExportVoice(ctx context.Context, audioPath, exportPath string, opts *ExportVoiceOptions) error {
+	if opts == nil {
+		opts = &ExportVoiceOptions{}
+	}
+	return exportVoice(ctx, audioPath, exportPath, opts)
 }

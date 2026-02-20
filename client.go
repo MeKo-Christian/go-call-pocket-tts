@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os/exec"
 	"strings"
+	"time"
 
 	"github.com/cwbudde/wav"
 )
@@ -44,7 +45,9 @@ func (c *Client) generate(ctx context.Context, text string) (*WAVResult, error) 
 		logWriter:      c.opts.LogWriter,
 	}
 
+	start := time.Now()
 	res, err := r.run(ctx, args, []byte(text))
+	elapsed := time.Since(start)
 	if err != nil {
 		return nil, err
 	}
@@ -58,11 +61,17 @@ func (c *Client) generate(ctx context.Context, text string) (*WAVResult, error) 
 		return nil, err
 	}
 
+	if c.opts.LogWriter != nil {
+		fmt.Fprintf(c.opts.LogWriter, "pockettts: generated %d bytes in %s (mode=cli)\n",
+			len(res.stdout), elapsed.Round(time.Millisecond))
+	}
+
 	return &WAVResult{
 		Data:          res.stdout,
 		SampleRate:    sr,
 		Channels:      ch,
 		BitsPerSample: bps,
+		Stats:         GenerationStats{Duration: elapsed},
 	}, nil
 }
 
