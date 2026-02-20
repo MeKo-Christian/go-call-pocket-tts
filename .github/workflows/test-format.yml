@@ -22,4 +22,5 @@ jobs:
       - name: Run treefmt
         uses: isbecker/treefmt-action@v2
         with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
           fail-on-change: true
