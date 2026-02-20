@@ -205,6 +205,7 @@ func (s *ServerClient) Generate(ctx context.Context, text string, opts *ServerGe
 	}
 	req.Header.Set("Content-Type", contentType)
 
+	start := time.Now()
 	resp, err := s.http.Do(req)
 	if err != nil {
 		return nil, fmt.Errorf("pockettts: TTS request: %w", err)
@@ -212,11 +213,12 @@ func (s *ServerClient) Generate(ctx context.Context, text string, opts *ServerGe
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		body, _ := io.ReadAll(io.LimitReader(resp.Body, 512))
-		return nil, &ErrNonZeroExit{ExitCode: resp.StatusCode, Stderr: string(body)}
+		errBody, _ := io.ReadAll(io.LimitReader(resp.Body, 512))
+		return nil, &ErrNonZeroExit{ExitCode: resp.StatusCode, Stderr: string(errBody)}
 	}
 
 	wavBytes, err := io.ReadAll(resp.Body)
+	elapsed := time.Since(start)
 	if err != nil {
 		return nil, fmt.Errorf("pockettts: read TTS response: %w", err)
 	}
@@ -226,11 +228,17 @@ func (s *ServerClient) Generate(ctx context.Context, text string, opts *ServerGe
 		return nil, err
 	}
 
+	if s.opts.LogWriter != nil {
+		fmt.Fprintf(s.opts.LogWriter, "pockettts: generated %d bytes in %s (mode=server)\n",
+			len(wavBytes), elapsed.Round(time.Millisecond))
+	}
+
 	return &WAVResult{
 		Data:          wavBytes,
 		SampleRate:    sr,
 		Channels:      ch,
 		BitsPerSample: bps,
+		Stats:         GenerationStats{Duration: elapsed},
 	}, nil
 }
 
