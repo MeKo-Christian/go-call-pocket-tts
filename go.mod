@@ -1,4 +1,4 @@
-module github.com/MeKo-Christian/go-call-pocket-tts
+module github.com/cwbudde/go-call-pocket-tts
 
 go 1.25.0
 
